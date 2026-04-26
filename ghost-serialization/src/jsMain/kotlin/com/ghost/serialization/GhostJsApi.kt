@@ -1,6 +1,6 @@
 package com.ghost.serialization
 
-import com.ghost.serialization.core.parser.GhostJsonReader
+import com.ghost.serialization.parser.GhostJsonReader
 
 /**
  * JS/Wasm Bridge for Ghost Serialization.

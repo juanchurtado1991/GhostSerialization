@@ -1,7 +1,10 @@
+@file:OptIn(InternalGhostApi::class)
+
 package com.ghost.serialization
 
-import com.ghost.serialization.core.contract.GhostRegistry
-import com.ghost.serialization.core.parser.GhostJsonReader
+import com.ghost.serialization.contract.GhostRegistry
+import com.ghost.serialization.parser.GhostJsonReader
+import com.ghost.serialization.parser.createByteArraySource
 
 /**
  * iOS Implementation of Ghost Registry Discovery.
@@ -24,12 +27,8 @@ actual fun <T> ghostInternalUseReader(
     bytes: ByteArray,
     block: (GhostJsonReader) -> T
 ): T {
-    val reader = GhostJsonReader(bytes)
-    try {
-        return block(reader)
-    } finally {
-        reader.clear()
-    }
+    val reader = GhostJsonReader(createByteArraySource(bytes))
+    return block(reader)
 }
 
 actual fun <T> ghostInternalUseSource(
@@ -37,10 +36,6 @@ actual fun <T> ghostInternalUseSource(
     block: (GhostJsonReader) -> T
 ): T {
     val bytes = source.readByteArray()
-    val reader = GhostJsonReader(bytes)
-    try {
-        return block(reader)
-    } finally {
-        reader.clear()
-    }
+    val reader = GhostJsonReader(createByteArraySource(bytes))
+    return block(reader)
 }

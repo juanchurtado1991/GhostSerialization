@@ -1,3 +1,5 @@
+@file:OptIn(InternalGhostApi::class)
+
 package com.ghost.serialization
 
 import com.ghost.serialization.benchmark.CharacterResponse
@@ -29,9 +31,9 @@ class GhostMemoryEditionTest {
 
         // Use the same internal API the JS bridge uses
         val serializer =
-            Ghost.getSerializerByName("CharacterResponse") as? com.ghost.serialization.core.contract.GhostSerializer<CharacterResponse>
+            Ghost.getSerializerByName("CharacterResponse") as? com.ghost.serialization.contract.GhostSerializer<CharacterResponse>
         val result =
-            serializer?.deserialize(com.ghost.serialization.core.parser.GhostJsonReader(bytes))
+            serializer?.deserialize(com.ghost.serialization.parser.GhostJsonReader(bytes))
 
         assertNotNull(result, "Deserialization should return a valid object")
         assertEquals(1, result.results.size)
@@ -47,9 +49,9 @@ class GhostMemoryEditionTest {
         val bytes = json.encodeToByteArray()
 
         val serializer =
-            Ghost.getSerializerByName("CharacterResponse") as? com.ghost.serialization.core.contract.GhostSerializer<CharacterResponse>
+            Ghost.getSerializerByName("CharacterResponse") as? com.ghost.serialization.contract.GhostSerializer<CharacterResponse>
         val result =
-            serializer?.deserialize(com.ghost.serialization.core.parser.GhostJsonReader(bytes))
+            serializer?.deserialize(com.ghost.serialization.parser.GhostJsonReader(bytes))
 
         assertNotNull(result)
         assertEquals("Mörty Smith 🧪", result.results[0].name)
@@ -62,9 +64,9 @@ class GhostMemoryEditionTest {
         val bytes = json.encodeToByteArray()
 
         val serializer =
-            Ghost.getSerializerByName("CharacterResponse") as? com.ghost.serialization.core.contract.GhostSerializer<CharacterResponse>
+            Ghost.getSerializerByName("CharacterResponse") as? com.ghost.serialization.contract.GhostSerializer<CharacterResponse>
         val result =
-            serializer?.deserialize(com.ghost.serialization.core.parser.GhostJsonReader(bytes))
+            serializer?.deserialize(com.ghost.serialization.parser.GhostJsonReader(bytes))
 
         assertNotNull(result)
         assertEquals(0, result.results.size)

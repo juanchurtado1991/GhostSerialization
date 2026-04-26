@@ -1,10 +1,11 @@
-@file:OptIn(ExperimentalStdlibApi::class)
+@file:OptIn(ExperimentalStdlibApi::class, InternalGhostApi::class)
 @file:Suppress("SameParameterValue")
 
 package com.ghost.benchmark
 
 import com.ghost.serialization.Ghost
-import com.ghost.serialization.core.parser.GhostJsonReader
+import com.ghost.serialization.InternalGhostApi
+import com.ghost.serialization.parser.GhostJsonReader
 import com.ghost.serialization.integration.model.BenchResult
 import com.ghost.serialization.integration.model.BenchUser
 import com.ghost.serialization.integration.model.BenchmarkMetrics

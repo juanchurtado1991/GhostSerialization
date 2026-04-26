@@ -12,8 +12,17 @@ const { ensureJdk, ensureGradle } = require('./ghost-downloader');
 
 const GHOST_HOME = path.join(os.homedir(), '.ghost');
 const PROJECT_DIR = path.join(GHOST_HOME, 'standalone');
-const KOTLIN_VERSION = '2.3.10';
-const GHOST_LIB_VERSION = '1.1.14';
+const KOTLIN_VERSION = '2.3.21';
+
+// Auto-detect version from package.json if possible, fallback to 1.1.14
+let GHOST_LIB_VERSION = '1.1.14';
+try {
+    const pkgPath = path.join(__dirname, '..', 'package.json');
+    if (fs.existsSync(pkgPath)) {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        if (pkg.version) GHOST_LIB_VERSION = pkg.version;
+    }
+} catch (e) {}
 
 function ensureDir(dir) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -46,6 +55,10 @@ kotlin {
     wasmJs {
         browser()
         binaries.library()
+        
+        compilerOptions {
+            freeCompilerArgs.add("-Xskip-prerelease-check")
+        }
     }
 
     sourceSets {
@@ -67,7 +80,9 @@ function copyGeneratedFiles(commonKtDir, wasmKtDir) {
 
     // Clean previous
     [targetCommon, targetWasm].forEach(dir => {
-        fs.readdirSync(dir).forEach(f => fs.unlinkSync(path.join(dir, f)));
+        if (fs.existsSync(dir)) {
+            fs.readdirSync(dir).forEach(f => fs.unlinkSync(path.join(dir, f)));
+        }
     });
 
     // Copy new
@@ -98,68 +113,36 @@ async function buildStandalone(commonKtDir, wasmKtDir) {
     LOG.info('[2/5] Ensuring Gradle build system...');
     const gradleCmd = ensureGradle();
 
-    // Step 3: Create project
+    // Step 3: Setup Project
     LOG.info('[3/5] Setting up invisible Kotlin/Wasm project...');
     ensureDir(PROJECT_DIR);
     writeSettingsGradle();
     writeBuildGradle();
 
-    // Generate wrapper using the Gradle we just ensured
-    const wrapperJar = path.join(PROJECT_DIR, 'gradle/wrapper/gradle-wrapper.jar');
-    if (!fs.existsSync(wrapperJar)) {
-        LOG.info('  Generating Gradle wrapper...');
-        const env = { ...process.env };
-        if (jdkBinDir) env.JAVA_HOME = path.dirname(jdkBinDir);
-        if (jdkBinDir) env.PATH = `${jdkBinDir}:${env.PATH}`;
-        execSync(`"${gradleCmd}" wrapper`, { cwd: PROJECT_DIR, stdio: 'pipe', env });
-        LOG.success('  Gradle wrapper ready.');
-    }
-
-    // Step 4: Copy generated files
+    // Step 4: Inject models
     LOG.info('[4/5] Injecting generated Kotlin models...');
     copyGeneratedFiles(commonKtDir, wasmKtDir);
 
-    // Step 5: Build
+    // Step 5: Compile
     LOG.info('[5/5] Compiling Kotlin/Wasm engine...');
     LOG.info('  (First build downloads dependencies — subsequent builds are fast)');
-
-    const gradlew = path.join(PROJECT_DIR, 'gradlew');
-    if (!fs.existsSync(gradlew)) {
-        LOG.error('Gradle wrapper not found. Setup failed.');
-        process.exit(1);
-    }
-
-    const buildEnv = { ...process.env };
-    if (jdkBinDir) {
-        buildEnv.JAVA_HOME = path.dirname(jdkBinDir);
-        buildEnv.PATH = `${jdkBinDir}:${buildEnv.PATH}`;
-    }
+    
+    const javaHomeEnv = process.env.JAVA_HOME || (jdkBinDir ? path.dirname(jdkBinDir) : '');
+    const env = { ...process.env };
+    if (javaHomeEnv) env.JAVA_HOME = javaHomeEnv;
 
     try {
-        execSync(`"${gradlew}" wasmJsBrowserProductionLibraryDistribution --no-daemon`, {
+        execSync(`"${gradleCmd}" :wasmJsBrowserProductionLibraryDistribution`, {
             cwd: PROJECT_DIR,
-            stdio: 'inherit',
-            env: buildEnv
+            env,
+            stdio: 'inherit'
         });
     } catch (e) {
         LOG.error('Kotlin/Wasm compilation failed. See output above.');
-        process.exit(1);
+        throw e;
     }
 
-    // Report
-    const dist = path.join(PROJECT_DIR, 'build/dist/wasmJs/productionLibrary');
-    if (fs.existsSync(dist)) {
-        LOG.success('');
-        LOG.success('Build complete! Artifacts:');
-        fs.readdirSync(dist).forEach(f => {
-            const size = (fs.statSync(path.join(dist, f)).size / 1024).toFixed(1);
-            LOG.info(`  📦 ${f} (${size} KB)`);
-        });
-        return dist;
-    }
-
-    LOG.error('Build output not found.');
-    return null;
+    return path.join(PROJECT_DIR, 'build/dist/wasmJs/productionLibrary');
 }
 
-module.exports = { buildStandalone, GHOST_HOME, PROJECT_DIR };
+module.exports = { buildStandalone };

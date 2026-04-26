@@ -67,9 +67,11 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             
-            implementation(project(":ghost-api"))
-            api(project(":ghost-serialization"))
-            implementation(project(":ghost-ktor"))
+            // Ghost (Remote 1.1.14)
+            implementation(libs.ghost.api)
+            api(libs.ghost.serialization)
+            implementation(libs.ghost.ktor)
+            
             implementation(libs.ktorfit.lib)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
@@ -130,6 +132,14 @@ android {
     namespace = "com.ghost.serialization.sample"
     compileSdk = 36
 
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("debug")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+    
     defaultConfig {
         applicationId = "com.ghost.serialization.sample"
         minSdk = 24
@@ -164,7 +174,30 @@ ktorfit {
     compilerPluginVersion.set("2.3.3")
 }
 
+configurations.all {
+    resolutionStrategy {
+        // Force JetBrains version of Lifecycle & SavedState to avoid KLIB conflicts with Google's version
+        force(libs.androidx.lifecycle.common)
+        force(libs.androidx.lifecycle.runtime)
+        force(libs.androidx.lifecycle.runtime.compose)
+        force(libs.androidx.lifecycle.viewmodel)
+        force(libs.androidx.lifecycle.viewmodel.compose)
+        force(libs.androidx.lifecycle.viewmodel.savedstate)
+        force(libs.androidx.savedstate)
+        force(libs.androidx.savedstate.compose)
+    }
+}
+
 dependencies {
+    // Ghost KSP (Remote 1.1.14)
+    add("kspCommonMainMetadata", libs.ghost.compiler)
+    add("kspJvm", libs.ghost.compiler)
+    add("kspAndroid", libs.ghost.compiler)
+    add("kspIosArm64", libs.ghost.compiler)
+    add("kspIosSimulatorArm64", libs.ghost.compiler)
+    add("kspWasmJs", libs.ghost.compiler)
+    add("kspJs", libs.ghost.compiler)
+
     // Ktorfit KSP
     add("kspJvm", libs.ktorfit.ksp)
     add("kspAndroid", libs.ktorfit.ksp)

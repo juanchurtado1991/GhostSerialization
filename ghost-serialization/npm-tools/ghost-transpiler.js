@@ -108,7 +108,9 @@ async function runTranspiler(overrides = {}) {
     const enumTypes = allEnums.map(e => `    ${e.name}: ${e.name};`).join('\n');
 
     const tsBridge = `// AUTO-GENERATED - GHOST SERIALIZATION BRIDGE
-import { ghostPrewarm, ghostDeserializeJs, ghostDeserializeBytesJs, memory } from "./ghost-standalone-wasm-js.mjs";
+// @ts-ignore
+import * as GhostWasm from "./ghost-standalone-wasm-js.mjs";
+const { ghostPrewarm, ghostDeserializeJs, ghostDeserializeBytesJs, memory } = GhostWasm as any;
 ${modelImports}
 
 export interface GhostModels {
@@ -121,9 +123,7 @@ export type ModelName = keyof GhostModels;
  * Ensures the Ghost WASM engine is loaded and initialized.
  */
 export async function ensureGhostReady(): Promise<void> {
-    // Note: initGhostWasm logic is handled by the .mjs auto-initialization 
-    // but we call ghostPrewarm to register serializers.
-    ghostPrewarm();
+    if (typeof ghostPrewarm === 'function') ghostPrewarm();
 }
 
 /**
@@ -176,12 +176,9 @@ ${allModels.map(m => `export type { ${m.name} };`).join('\n')}
                     let content = fs.readFileSync(srcPath, 'utf8');
                     
                     // HOT PATCH 1: Fix Kotlin/Wasm process.release.name bug in Next.js/Browser
-                    // We must check if process.release actually exists before reading .name to prevent crashes in Turbopack.
                     content = content.replace(/process\.release\.name/g, "(process.release && process.release.name)");
 
                     // HOT PATCH 2: Architecture Fix for Next.js SSR Wasm Loading
-                    // The Kotlin compiler uses experimental import.meta.resolve() which fails in Next.js SSR (Node.js).
-                    // We rewrite the Node.js loader to use standard isomorphic path resolution (path.dirname + fileURLToPath).
                     content = content.replace(
                         /const filepath = import\.meta\.resolve\(wasmFilePath\);\s*const wasmBuffer = fs\.readFileSync\(url\.fileURLToPath\(filepath\)\);/,
                         "const path = require('path'); const dir = path.dirname(url.fileURLToPath(importMeta.url)); const wasmBuffer = fs.readFileSync(path.join(dir, wasmFilePath));"

@@ -1,7 +1,10 @@
-package com.ghost.serialization
+@file:OptIn(InternalGhostApi::class)
 
-import com.ghost.serialization.core.parser.GhostJsonReader
-import com.ghost.serialization.core.parser.JsonReaderOptions
+package com.ghost.serialization
+import com.ghost.serialization.parser.*
+
+import com.ghost.serialization.parser.GhostJsonReader
+import com.ghost.serialization.parser.JsonReaderOptions
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

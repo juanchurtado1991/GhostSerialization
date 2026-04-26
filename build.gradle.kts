@@ -27,15 +27,16 @@ allprojects {
 
 subprojects {
     afterEvaluate {
-        if (name != "ghostsample") {
-            tasks.withType<KotlinCompile>().configureEach {
-                compilerOptions {
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+            compilerOptions {
+                if (this is org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions) {
                     jvmTarget.set(JvmTarget.JVM_17)
-                    freeCompilerArgs.addAll(
-                        "-Xexpect-actual-classes",
-                        "-Xexplicit-backing-fields",
-                        "-Xreturn-value-checker=full"
-                    )
+                }
+                freeCompilerArgs.add("-Xexpect-actual-classes")
+                freeCompilerArgs.add("-Xexplicit-backing-fields")
+                
+                if (project.name != "ghost-gradle-plugin") {
+                    freeCompilerArgs.add("-Xreturn-value-checker=full")
                 }
             }
         }

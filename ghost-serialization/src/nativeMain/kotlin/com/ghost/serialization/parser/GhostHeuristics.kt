@@ -1,0 +1,7 @@
+package com.ghost.serialization.parser
+
+actual object GhostHeuristics {
+    actual val initialCollectionCapacity: Int = 12
+    actual val maxStringPoolLength: Int = 128
+    actual val maxCollectionSize: Int = 500_000
+}

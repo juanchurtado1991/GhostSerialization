@@ -1,5 +1,7 @@
 // AUTO-GENERATED - GHOST SERIALIZATION BRIDGE
-import { ghostPrewarm, ghostDeserializeJs, ghostDeserializeBytesJs, memory } from "./ghost-standalone-wasm-js.mjs";
+// @ts-ignore
+import * as GhostWasm from "./ghost-standalone-wasm-js.mjs";
+const { ghostPrewarm, ghostDeserializeJs, ghostDeserializeBytesJs, memory } = GhostWasm as any;
 import type { Model } from "../ghost-models/Model";
 
 export interface GhostModels {
@@ -12,9 +14,7 @@ export type ModelName = keyof GhostModels;
  * Ensures the Ghost WASM engine is loaded and initialized.
  */
 export async function ensureGhostReady(): Promise<void> {
-    // Note: initGhostWasm logic is handled by the .mjs auto-initialization 
-    // but we call ghostPrewarm to register serializers.
-    ghostPrewarm();
+    if (typeof ghostPrewarm === 'function') ghostPrewarm();
 }
 
 /**

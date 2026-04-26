@@ -1,10 +1,13 @@
+@file:OptIn(InternalGhostApi::class)
+
 package com.ghost.serialization.sample.api
 
 import com.ghost.serialization.Ghost
+import com.ghost.serialization.InternalGhostApi
 import com.ghost.serialization.ktor.ghost
 import com.ghost.serialization.benchmark.CharacterResponse
 import com.ghost.serialization.benchmark.GhostCharacter
-import com.ghost.serialization.benchmark.GhostModuleRegistry_ghost_serialization
+import com.ghost.serialization.generated.GhostModuleRegistry_ghost_serialization
 import com.ghost.serialization.sample.ui.JankTracker
 import com.ghost.serialization.sample.ui.model.NetworkStack
 import com.ghost.serialization.sample.util.forceGC

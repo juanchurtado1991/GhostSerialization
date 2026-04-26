@@ -1,8 +1,10 @@
+@file:OptIn(InternalGhostApi::class)
+
 package com.ghost.serialization
 
-import com.ghost.serialization.core.parser.GhostJsonReader
-import com.ghost.serialization.core.contract.GhostRegistry
-import com.ghost.serialization.core.contract.GhostSerializer
+import com.ghost.serialization.parser.GhostJsonReader
+import com.ghost.serialization.contract.GhostRegistry
+import com.ghost.serialization.contract.GhostSerializer
 import com.ghost.serialization.serializers.BooleanSerializer
 import com.ghost.serialization.serializers.DoubleSerializer
 import com.ghost.serialization.serializers.IntSerializer

@@ -1,6 +1,6 @@
 package com.ghost.serialization
 
-import com.ghost.serialization.benchmark.GhostModuleRegistry_ghost_serialization
+import com.ghost.serialization.generated.GhostModuleRegistry_ghost_serialization
 import kotlin.js.JsExport
 import kotlin.js.JsName
 import kotlin.js.ExperimentalJsExport

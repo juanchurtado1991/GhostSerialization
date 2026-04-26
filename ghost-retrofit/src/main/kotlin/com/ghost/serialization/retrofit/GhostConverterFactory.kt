@@ -1,7 +1,7 @@
 package com.ghost.serialization.retrofit
 
-import com.ghost.serialization.core.contract.GhostSerializer
-import com.ghost.serialization.core.contract.GhostRegistry
+import com.ghost.serialization.contract.GhostSerializer
+import com.ghost.serialization.contract.GhostRegistry
 import com.ghost.serialization.serializers.ListSerializer
 import com.ghost.serialization.serializers.MapSerializer
 import com.ghost.serialization.serializers.StringSerializer

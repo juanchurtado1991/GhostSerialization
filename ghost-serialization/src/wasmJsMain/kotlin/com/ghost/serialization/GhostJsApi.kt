@@ -2,9 +2,10 @@
 
 package com.ghost.serialization
 
-import com.ghost.serialization.core.contract.GhostSerializer
-import com.ghost.serialization.core.parser.GhostJsonReader
-import com.ghost.serialization.core.parser.WasmSource
+import com.ghost.serialization.contract.GhostSerializer
+import com.ghost.serialization.parser.GhostJsonReader
+import com.ghost.serialization.parser.createByteArraySource
+import com.ghost.serialization.parser.createJsSource
 import com.ghost.serialization.generated.GhostAutoRegistry
 import com.ghost.serialization.generated.GhostJsRegistryInitializer
 
@@ -53,7 +54,7 @@ fun ghostDeserialize(json: String, typeName: String): String? {
             println(">>> [Ghost] HINT: Ensure you ran the sync tool and the model is annotated with @GhostSerialization.")
             return null
         }
-        val reader = GhostJsonReader(json.encodeToByteArray())
+        val reader = GhostJsonReader(createByteArraySource(json.encodeToByteArray()))
         val result = serializer.deserialize(reader) ?: return null
 
         Ghost.serialize(result)
@@ -68,7 +69,7 @@ fun ghostDeserialize(json: String, typeName: String): String? {
 fun ghostDeserializeBytes(bytes: JsAny, typeName: String): String? {
     return try {
         val serializer = Ghost.getSerializerByName(typeName) ?: return null
-        val reader = GhostJsonReader(WasmSource(bytes, getJsArrayLength(bytes)))
+        val reader = GhostJsonReader(createJsSource(bytes))
         val result = (serializer as GhostSerializer<Any>).deserialize(reader) ?: return null
         Ghost.serialize(result)
     } catch (_: Exception) {
@@ -83,7 +84,7 @@ fun ghostDeserializeBytes(bytes: JsAny, typeName: String): String? {
 fun ghostDeserializeBytesJs(bytes: JsAny, typeName: String): JsAny? {
     return try {
         val serializer = Ghost.getSerializerByName(typeName) ?: return null
-        val reader = GhostJsonReader(WasmSource(bytes, getJsArrayLength(bytes)))
+        val reader = GhostJsonReader(createJsSource(bytes))
         val result = (serializer as GhostSerializer<Any>).deserialize(reader)
         GhostJsObjectRegistry.build(typeName, result)
     } catch (_: Throwable) {
@@ -101,7 +102,7 @@ fun ghostDeserializeJs(json: String, typeName: String): JsAny? {
             println(">>> [Ghost] Serializer not found for type: $typeName")
             return null
         }
-        val reader = GhostJsonReader(json.encodeToByteArray())
+        val reader = GhostJsonReader(createByteArraySource(json.encodeToByteArray()))
         val result = (serializer as GhostSerializer<Any>).deserialize(reader)
         GhostJsObjectRegistry.build(typeName, result)
     } catch (e: Throwable) {

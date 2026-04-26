@@ -1,6 +1,10 @@
+@file:OptIn(InternalGhostApi::class)
+
 package com.ghost.serialization
 
-import com.ghost.serialization.core.contract.GhostRegistry
+import com.ghost.serialization.contract.GhostRegistry
+import com.ghost.serialization.parser.GhostJsonReader
+import com.ghost.serialization.parser.createByteArraySource
 import java.util.ServiceLoader
 
 /**
@@ -12,7 +16,7 @@ actual fun discoverRegistries(): List<GhostRegistry> {
     
     // 1. Direct bypass for maximum performance (Zero latency for core)
     try {
-        val registryClass = Class.forName("com.ghost.serialization.benchmark.GhostModuleRegistry_ghost_serialization")
+        val registryClass = Class.forName("com.ghost.serialization.generated.GhostModuleRegistry_ghost_serialization")
         val instance = registryClass.getDeclaredField("INSTANCE").get(null) as GhostRegistry
         registries.add(instance)
     } catch (e: Exception) {
@@ -38,12 +42,20 @@ actual fun <T> runSynchronized(lock: Any, block: () -> T): T {
     return synchronized(lock, block)
 }
 
-actual fun <T> ghostInternalUseReader(bytes: ByteArray, block: (com.ghost.serialization.core.parser.GhostJsonReader) -> T): T {
-    val reader = com.ghost.serialization.core.parser.GhostJsonReader(bytes)
-    return block(reader)
+actual fun <T> ghostInternalUseReader(bytes: ByteArray, block: (GhostJsonReader) -> T): T {
+    val reader = GhostJsonReader(createByteArraySource(bytes))
+    try {
+        return block(reader)
+    } finally {
+        reader.reset(byteArrayOf())
+    }
 }
 
-actual fun <T> ghostInternalUseSource(source: okio.BufferedSource, block: (com.ghost.serialization.core.parser.GhostJsonReader) -> T): T {
-    val reader = com.ghost.serialization.core.parser.GhostJsonReader(source.readByteArray())
-    return block(reader)
+actual fun <T> ghostInternalUseSource(source: okio.BufferedSource, block: (GhostJsonReader) -> T): T {
+    val reader = GhostJsonReader(createByteArraySource(source.readByteArray()))
+    try {
+        return block(reader)
+    } finally {
+        reader.reset(byteArrayOf())
+    }
 }

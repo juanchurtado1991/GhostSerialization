@@ -114,7 +114,7 @@ tasks.configureEach {
 }
 
 android {
-    namespace = "com.ghost.serialization.core"
+    namespace = "com.ghost.serialization"
     compileSdk = 36
 
     compileOptions {

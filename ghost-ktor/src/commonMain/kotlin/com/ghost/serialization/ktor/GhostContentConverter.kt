@@ -1,7 +1,10 @@
+@file:OptIn(InternalGhostApi::class)
+
 package com.ghost.serialization.ktor
 
 import com.ghost.serialization.Ghost
-import com.ghost.serialization.core.parser.GhostJsonReader
+import com.ghost.serialization.InternalGhostApi
+import com.ghost.serialization.parser.GhostJsonReader
 import io.ktor.http.ContentType
 import io.ktor.http.content.TextContent
 import io.ktor.serialization.ContentConverter
